@@ -1,9 +1,9 @@
-﻿import { getBulletins } from '@/libs/microcms';
+﻿import { connection } from 'next/server';
+import { getBulletins } from '@/libs/microcms';
 import BulletinView from './BulletinView';
 
-export const dynamic = 'force-dynamic';
-
 export default async function Home() {
+  await connection();
   const bulletins = await getBulletins();
 
   if (!bulletins || bulletins.length === 0) {
