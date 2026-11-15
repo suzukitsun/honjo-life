@@ -31,12 +31,13 @@ export const client = createClient({
   apiKey: process.env.MICROCMS_API_KEY,
 });
 
+// 10年分以上の全件を自動でページネーション取得する（上限10件の壁を解消）
 export const getBulletins = async () => {
-  const data = await client.getList<Bulletin>({
+  const contents = await client.getAllContents<Bulletin>({
     endpoint: 'bulletins',
     queries: { orders: '-publishedDate' },
   });
-  return data.contents;
+  return contents;
 };
 
 export const getBulletinDetail = async (contentId: string) => {
