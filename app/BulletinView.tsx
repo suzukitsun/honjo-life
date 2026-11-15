@@ -1,13 +1,61 @@
 ﻿'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Bulletin } from '@/libs/microcms';
 import { marked } from 'marked';
 
 export default function BulletinView({ bulletins }: { bulletins: Bulletin[] }) {
-  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [selectedYear, setSelectedYear] = useState<string>('ALL');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedId, setSelectedId] = useState<string>(bulletins[0]?.id || '');
 
-  const bulletin = bulletins[selectedIndex] || bulletins[0];
+  // 公開データに存在する「年」の一覧を自動抽出（新しい順）
+  const availableYears = useMemo(() => {
+    const years = new Set<string>();
+    bulletins.forEach((b) => {
+      if (b.publishedDate) {
+        const y = new Date(b.publishedDate).getFullYear();
+        if (!isNaN(y)) years.add(String(y));
+      }
+    });
+    return Array.from(years).sort((a, b) => Number(b) - Number(a));
+  }, [bulletins]);
+
+  // 年とキーワードで絞り込んだ週報リスト
+  const filteredBulletins = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return bulletins.filter((b) => {
+      if (selectedYear !== 'ALL' && b.publishedDate) {
+        const y = String(new Date(b.publishedDate).getFullYear());
+        if (y !== selectedYear) return false;
+      }
+      if (q) {
+        const targetText = [
+          b.title,
+          b.subtitle,
+          b.scripture,
+          b.preacher,
+          b.content,
+          b.report,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+        if (!targetText.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [bulletins, selectedYear, searchQuery]);
+
+  // 現在表示する週報（絞り込み結果内に選択中のIDがあればそれを、なければ先頭を表示）
+  const currentIndex = useMemo(() => {
+    if (filteredBulletins.length === 0) return -1;
+    const idx = filteredBulletins.findIndex((b) => b.id === selectedId);
+    return idx >= 0 ? idx : 0;
+  }, [filteredBulletins, selectedId]);
+
+  const bulletin =
+    currentIndex >= 0 ? filteredBulletins[currentIndex] : bulletins[0];
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
@@ -26,11 +74,18 @@ export default function BulletinView({ bulletins }: { bulletins: Bulletin[] }) {
     return marked.parse(cleaned, { async: false }) as string;
   };
 
-  const contentHtml = formatRichContent(bulletin.content);
-  const reportHtml = formatRichContent(bulletin.report);
+  const contentHtml = formatRichContent(bulletin?.content);
+  const reportHtml = formatRichContent(bulletin?.report);
 
-  const hasOlder = selectedIndex < bulletins.length - 1;
-  const hasNewer = selectedIndex > 0;
+  const hasOlder = currentIndex >= 0 && currentIndex < filteredBulletins.length - 1;
+  const hasNewer = currentIndex > 0;
+  const isFiltering = selectedYear !== 'ALL' || searchQuery.trim() !== '';
+
+  const handleResetFilter = () => {
+    setSelectedYear('ALL');
+    setSearchQuery('');
+    if (bulletins[0]) setSelectedId(bulletins[0].id);
+  };
 
   return (
     <div className="min-h-screen bg-stone-100 py-8 px-4 print:bg-white print:p-0">
@@ -58,58 +113,112 @@ export default function BulletinView({ bulletins }: { bulletins: Bulletin[] }) {
       `}</style>
 
       {/* 上部コントロールバー（印刷・PDFには含まれない） */}
-      <div className="max-w-[210mm] mx-auto mb-6 flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-xl shadow-sm border border-stone-200 print:hidden">
-        <div>
-          <span className="text-xs font-semibold tracking-wider text-emerald-700 uppercase">
-            Keisen Christian Church
-          </span>
-          <h1 className="text-sm font-bold text-stone-800">恵泉キリスト教会 週報システム</h1>
-        </div>
+      <div className="max-w-[210mm] mx-auto mb-6 bg-white p-4 rounded-xl shadow-sm border border-stone-200 space-y-3 print:hidden">
+        {/* 1段目：タイトルとA4 PDF印刷ボタン */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <span className="text-xs font-semibold tracking-wider text-emerald-700 uppercase">
+              Keisen Christian Church
+            </span>
+            <h1 className="text-sm font-bold text-stone-800">
+              恵泉キリスト教会 週報システム
+              <span className="ml-2 text-xs font-normal text-stone-500">
+                （全{bulletins.length}号）
+              </span>
+            </h1>
+          </div>
 
-        {/* バックナンバー切替コントロール（常時表示） */}
-        <div className="flex flex-wrap items-center gap-1.5">
           <button
             type="button"
-            onClick={() => hasOlder && setSelectedIndex(selectedIndex + 1)}
-            disabled={!hasOlder}
-            className="px-2.5 py-2 text-xs font-medium bg-white border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
-            title="ひとつ前の週報へ"
+            onClick={() => window.print()}
+            className="px-4 py-2 text-sm font-medium text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg shadow-sm transition cursor-pointer"
           >
-            ← 前号
+            A4 PDF保存 / 印刷
           </button>
+        </div>
 
+        {/* 2段目：年別絞り込み・キーワード検索・バックナンバー切替 */}
+        <div className="pt-2.5 border-t border-stone-100 flex flex-wrap items-center gap-2">
+          {/* 年選択 */}
           <select
-            aria-label="バックナンバー選択"
-            value={selectedIndex}
-            onChange={(e) => setSelectedIndex(Number(e.target.value))}
-            className="px-3 py-2 text-xs sm:text-sm bg-stone-50 border border-stone-300 rounded-lg text-stone-700 focus:outline-none focus:border-emerald-600 max-w-[230px] sm:max-w-[300px]"
+            aria-label="年別絞り込み"
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+            className="px-2.5 py-1.5 text-xs bg-stone-50 border border-stone-300 rounded-lg text-stone-700 font-medium focus:outline-none focus:border-emerald-600"
           >
-            {bulletins.map((b, idx) => (
-              <option key={b.id} value={idx}>
-                {formatDate(b.publishedDate)} - {b.title}
-                {idx === 0 ? '（最新）' : ''}
+            <option value="ALL">全年（{bulletins.length}件）</option>
+            {availableYears.map((y) => (
+              <option key={y} value={y}>
+                {y}年
               </option>
             ))}
           </select>
 
-          <button
-            type="button"
-            onClick={() => hasNewer && setSelectedIndex(selectedIndex - 1)}
-            disabled={!hasNewer}
-            className="px-2.5 py-2 text-xs font-medium bg-white border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
-            title="ひとつ新しい週報へ"
-          >
-            次号 →
-          </button>
-        </div>
+          {/* キーワード検索 */}
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="タイトル・聖書箇所・本文を検索..."
+            className="px-3 py-1.5 text-xs bg-stone-50 border border-stone-300 rounded-lg text-stone-800 placeholder:text-stone-400 focus:outline-none focus:border-emerald-600 w-48 sm:w-56"
+          />
 
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className="px-4 py-2 text-sm font-medium text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg shadow-sm transition cursor-pointer"
-        >
-          A4 PDF保存 / 印刷
-        </button>
+          {isFiltering && (
+            <button
+              type="button"
+              onClick={handleResetFilter}
+              className="px-2 py-1.5 text-xs text-stone-500 hover:text-stone-800 underline cursor-pointer"
+            >
+              クリア
+            </button>
+          )}
+
+          {/* 前号・リスト・次号 */}
+          <div className="flex items-center gap-1.5 ml-auto flex-wrap">
+            <button
+              type="button"
+              onClick={() =>
+                hasOlder && setSelectedId(filteredBulletins[currentIndex + 1].id)
+              }
+              disabled={!hasOlder}
+              className="px-2.5 py-1.5 text-xs font-medium bg-white border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              title="ひとつ前の週報へ"
+            >
+              ← 前号
+            </button>
+
+            <select
+              aria-label="バックナンバー選択"
+              value={bulletin?.id || ''}
+              onChange={(e) => setSelectedId(e.target.value)}
+              disabled={filteredBulletins.length === 0}
+              className="px-2.5 py-1.5 text-xs bg-stone-50 border border-stone-300 rounded-lg text-stone-700 focus:outline-none focus:border-emerald-600 max-w-[220px] sm:max-w-[280px]"
+            >
+              {filteredBulletins.length === 0 ? (
+                <option value="">該当する週報がありません</option>
+              ) : (
+                filteredBulletins.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {formatDate(b.publishedDate)} - {b.title}
+                    {b.id === bulletins[0]?.id ? '（最新）' : ''}
+                  </option>
+                ))
+              )}
+            </select>
+
+            <button
+              type="button"
+              onClick={() =>
+                hasNewer && setSelectedId(filteredBulletins[currentIndex - 1].id)
+              }
+              disabled={!hasNewer}
+              className="px-2.5 py-1.5 text-xs font-medium bg-white border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              title="ひとつ新しい週報へ"
+            >
+              次号 →
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* A4用紙レイアウト本体 */}
