@@ -63,12 +63,13 @@ export default function BulletinView({ bulletins }: { bulletins: Bulletin[] }) {
     return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
   };
 
-  // リッチエディタ内の見出しや強調行を品よく整形
+  // リッチエディタ内の見出し（# / ## / ###）を綺麗に整形
   const formatRichContent = (raw?: string) => {
     if (!raw) return '';
     const cleaned = raw
       .replace(/<p>\s*###\s*(.*?)<\/p>/gi, '<h3>$1</h3>')
       .replace(/<p>\s*##\s*(.*?)<\/p>/gi, '<h2>$1</h2>')
+      .replace(/<p>\s*#\s*(.*?)<\/p>/gi, '<p class="font-bold text-stone-900">$1</p>')
       .replace(/^###\s+(.*)$/gm, '<h3>$1</h3>')
       .replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
     return marked.parse(cleaned, { async: false }) as string;
@@ -127,7 +128,7 @@ export default function BulletinView({ bulletins }: { bulletins: Bulletin[] }) {
                 LIFE COMMUNITY HONJO / KEISEN CHRISTIAN CHURCH
               </span>
               <h1 className="text-base font-bold text-stone-800 tracking-tight">
-                恵泉キリスト教会 週報アーカイブ
+                恵泉キリスト教会 本荘ライフコミュニティ 週報アーカイブ
                 <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#EEF4E6] text-[#4A7A11]">
                   全{bulletins.length}号
                 </span>
@@ -234,8 +235,8 @@ export default function BulletinView({ bulletins }: { bulletins: Bulletin[] }) {
         <header className="border-b-2 border-[#5B9516] pb-4 mb-6 flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-1.5">
-              <span className="text-xs font-bold tracking-[0.14em] text-[#4A7A11]">
-                恵泉キリスト教会 礼拝週報
+              <span className="text-xs sm:text-[13px] font-bold tracking-[0.1em] text-[#4A7A11]">
+                恵泉キリスト教会 本荘ライフコミュニティ 礼拝週報
               </span>
               <span className="text-stone-300">|</span>
               <time className="text-xs sm:text-sm font-semibold text-stone-600">
@@ -246,7 +247,7 @@ export default function BulletinView({ bulletins }: { bulletins: Bulletin[] }) {
               {bulletin.title}
             </h2>
             {bulletin.subtitle && (
-              <p className="mt-1.5 text-sm sm:text-[15px] text-[#4A7A11] font-medium">
+              <p className="mt-2 text-base sm:text-lg text-[#4A7A11] font-semibold leading-snug">
                 {bulletin.subtitle}
               </p>
             )}
@@ -308,11 +309,11 @@ export default function BulletinView({ bulletins }: { bulletins: Bulletin[] }) {
 
         {/* メッセージ本文 */}
         <section className="mb-8">
-          <h3 className="font-serif text-base font-bold text-[#3D660E] border-l-4 border-[#65A318] pl-3 mb-4">
+          <h3 className="font-sans text-base sm:text-[17px] font-extrabold text-[#3D660E] border-l-4 border-[#65A318] pl-3 mb-4">
             礼拝メッセージ要旨
           </h3>
           <div
-            className="prose prose-stone max-w-none text-sm sm:text-[15px] print:text-[10.5pt] leading-[1.85] print:leading-[1.68] space-y-3 [&>h2]:font-serif [&>h2]:text-base [&>h2]:font-bold [&>h2]:text-[#3D660E] [&>h2]:mt-5 [&>h2]:mb-2 [&>h2]:pb-1 [&>h2]:border-b [&>h2]:border-[#E2EAD8] [&>h3]:font-bold [&>h3]:text-stone-900 [&>h3]:mt-4 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>blockquote]:border-l-2 [&>blockquote]:border-[#65A318] [&>blockquote]:bg-[#F9FBF6] [&>blockquote]:py-1 [&>blockquote]:px-3 [&>blockquote]:italic [&>blockquote]:text-stone-700"
+            className="prose prose-stone max-w-none text-sm sm:text-[15px] print:text-[10.5pt] leading-[1.85] print:leading-[1.68] space-y-3 [&>h2]:font-sans [&>h2]:text-base [&>h2]:sm:text-[17px] [&>h2]:print:text-[12pt] [&>h2]:font-extrabold [&>h2]:text-[#2E4F0A] [&>h2]:mt-6 [&>h2]:mb-2.5 [&>h2]:pb-1 [&>h2]:border-b-2 [&>h2]:border-[#DCE6D0] [&>h3]:font-sans [&>h3]:text-[15px] [&>h3]:font-bold [&>h3]:text-stone-900 [&>h3]:mt-4 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>blockquote]:border-l-2 [&>blockquote]:border-[#65A318] [&>blockquote]:bg-[#F9FBF6] [&>blockquote]:py-1 [&>blockquote]:px-3 [&>blockquote]:italic [&>blockquote]:text-stone-700"
             dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
         </section>
@@ -320,11 +321,11 @@ export default function BulletinView({ bulletins }: { bulletins: Bulletin[] }) {
         {/* お知らせ・報告事項 */}
         {reportHtml && (
           <section className="border-t-2 border-[#DCE6D0] pt-6">
-            <h3 className="font-serif text-base font-bold text-[#3D660E] border-l-4 border-[#65A318] pl-3 mb-4">
+            <h3 className="font-sans text-base sm:text-[17px] font-extrabold text-[#3D660E] border-l-4 border-[#65A318] pl-3 mb-4">
               教会からのお知らせ・報告
             </h3>
             <div
-              className="prose prose-stone max-w-none text-sm print:text-[10pt] leading-7 space-y-2 [&>h2]:text-sm [&>h2]:font-bold [&>h2]:text-[#3D660E] [&>h2]:mt-4 [&>h2]:mb-1 [&>ul]:list-disc [&>ul]:pl-5"
+              className="prose prose-stone max-w-none text-sm print:text-[10pt] leading-7 space-y-2 [&>h2]:font-sans [&>h2]:text-[15px] [&>h2]:font-extrabold [&>h2]:text-[#2E4F0A] [&>h2]:mt-4 [&>h2]:mb-1.5 [&>ul]:list-disc [&>ul]:pl-5"
               dangerouslySetInnerHTML={{ __html: reportHtml }}
             />
           </section>
@@ -333,7 +334,7 @@ export default function BulletinView({ bulletins }: { bulletins: Bulletin[] }) {
         {/* フッター */}
         <footer className="mt-10 pt-4 border-t border-[#E2EAD8] flex items-center justify-center gap-2 text-xs text-stone-400">
           <img src="/logo.svg" alt="" className="w-4 h-4 opacity-80" />
-          <span>恵泉キリスト教会（Keisen Christian Church / Life Community Honjo）</span>
+          <span>恵泉キリスト教会 本荘ライフコミュニティ（Keisen Christian Church / Life Community Honjo）</span>
         </footer>
       </article>
     </div>
