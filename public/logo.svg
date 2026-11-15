@@ -1,0 +1,46 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- リーフグリーン円形背景 -->
+  <circle cx="100" cy="100" r="96" fill="#65A318" />
+  <!-- 白いCのリング -->
+  <path
+    d="M 150 56 A 64 64 0 1 0 150 144"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="19"
+    stroke-linecap="butt"
+  />
+  <!-- HONJO テキスト -->
+  <text
+    x="114"
+    y="86"
+    text-anchor="middle"
+    fill="#FFFFFF"
+    font-family="'Helvetica Neue', Arial, sans-serif"
+    font-weight="600"
+    font-size="21"
+    letter-spacing="1.5"
+  >HONJO</text>
+  <!-- L + 十字架(I) + FE -->
+  <text
+    x="83"
+    y="124"
+    text-anchor="middle"
+    fill="#FFFFFF"
+    font-family="'Helvetica Neue', Arial, sans-serif"
+    font-weight="600"
+    font-size="31"
+  >L</text>
+  <!-- 十字架（Iの代わり） -->
+  <rect x="97" y="96" width="5.5" height="30" fill="#FFFFFF" rx="1" />
+  <rect x="90" y="103" width="19.5" height="5" fill="#FFFFFF" rx="1" />
+  <text
+    x="132"
+    y="124"
+    text-anchor="middle"
+    fill="#FFFFFF"
+    font-family="'Helvetica Neue', Arial, sans-serif"
+    font-weight="600"
+    font-size="31"
+    letter-spacing="1"
+  >FE</text>
+</svg>
