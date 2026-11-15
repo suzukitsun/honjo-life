@@ -1,6 +1,8 @@
 ﻿import { getBulletins } from '@/libs/microcms';
 import BulletinView from './BulletinView';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const bulletins = await getBulletins();
 
