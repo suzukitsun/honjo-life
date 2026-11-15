@@ -125,7 +125,8 @@ export default function BulletinView({ bulletins }: { bulletins: Bulletin[] }) {
             />
             <div className="min-w-0">
               <span className="block text-[9px] sm:text-[10px] font-bold tracking-[0.14em] text-[#558B14] uppercase truncate">
-                LIFE COMMUNITY HONJO / KEISEN
+                LIFE COMMUNITY HONJO
+                <span className="hidden sm:inline"> / KEISEN CHRIST CHURCH</span>
               </span>
               <h1 className="text-xs sm:text-base font-bold text-stone-800 tracking-tight leading-snug">
                 恵泉キリスト教会 本荘ライフコミュニティ 週報
@@ -230,7 +231,7 @@ export default function BulletinView({ bulletins }: { bulletins: Bulletin[] }) {
         </div>
       </div>
 
-      {/* A4用紙レイアウト本体（スマホでは余白を詰めて幅広に表示、PC・印刷時はA4余白を維持） */}
+      {/* A4用紙レイアウト本体 */}
       <article className="max-w-[210mm] min-h-[297mm] mx-auto bg-white shadow-md rounded-lg sm:rounded-xs print:shadow-none px-4 py-5 sm:p-[18mm] print:p-0 text-stone-800 leading-relaxed relative overflow-hidden">
         {/* 上端のブランドカラーアクセントライン */}
         <div className="h-1.5 bg-gradient-to-r from-[#65A318] via-[#7CB82F] to-[#4A7A11] -mx-4 -mt-5 sm:-mx-[18mm] sm:-mt-[18mm] mb-4 sm:mb-6 print:mx-0 print:mt-0 print:mb-5" />
@@ -338,7 +339,7 @@ export default function BulletinView({ bulletins }: { bulletins: Bulletin[] }) {
         {/* フッター */}
         <footer className="mt-8 sm:mt-10 pt-4 border-t border-[#E2EAD8] flex items-center justify-center gap-2 text-[11px] sm:text-xs text-stone-400">
           <img src="/logo.svg" alt="" className="w-4 h-4 opacity-80 shrink-0" />
-          <span>恵泉キリスト教会 本荘ライフコミュニティ（Keisen Christian Church）</span>
+          <span>恵泉キリスト教会 本荘ライフコミュニティ（Keisen Christ Church）</span>
         </footer>
       </article>
     </div>
