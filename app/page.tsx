@@ -1,8 +1,9 @@
-﻿import { connection } from 'next/server';
+﻿import { Suspense } from 'react';
+import { connection } from 'next/server';
 import { getBulletins } from '@/libs/microcms';
 import BulletinView from './BulletinView';
 
-export default async function Home() {
+async function BulletinContent() {
   await connection();
   const bulletins = await getBulletins();
 
@@ -15,4 +16,18 @@ export default async function Home() {
   }
 
   return <BulletinView bulletins={bulletins} />;
+}
+
+export default function Home() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-stone-50 text-stone-500">
+          <p>週報を読み込んでいます...</p>
+        </div>
+      }
+    >
+      <BulletinContent />
+    </Suspense>
+  );
 }
