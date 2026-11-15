@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Bulletin } from '@/libs/microcms';
 import { marked } from 'marked';
 
@@ -56,6 +56,33 @@ export default function BulletinView({ bulletins }: { bulletins: Bulletin[] }) {
 
   const bulletin =
     currentIndex >= 0 ? filteredBulletins[currentIndex] : bulletins[0];
+
+  // 発行日から「YYYYMMDD」形式を生成するヘルパー
+  const getCompactDate = (dateString?: string) => {
+    if (!dateString) return '';
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return '';
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}${m}${day}`;
+  };
+
+  // 表示中の週報に合わせてブラウザタイトル（＝PDF保存時のファイル名）を自動更新
+  useEffect(() => {
+    const yyyymmdd = getCompactDate(bulletin?.publishedDate);
+    if (yyyymmdd) {
+      document.title = `本荘LC週報${yyyymmdd}`;
+    }
+  }, [bulletin?.publishedDate]);
+
+  const handlePrint = () => {
+    const yyyymmdd = getCompactDate(bulletin?.publishedDate);
+    if (yyyymmdd) {
+      document.title = `本荘LC週報${yyyymmdd}`;
+    }
+    window.print();
+  };
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
@@ -139,7 +166,7 @@ export default function BulletinView({ bulletins }: { bulletins: Bulletin[] }) {
 
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={handlePrint}
             className="px-2.5 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-sm font-semibold text-white bg-[#5B9516] hover:bg-[#4A7A11] rounded-lg sm:rounded-xl shadow-xs transition cursor-pointer shrink-0"
           >
             A4 PDF / 印刷
